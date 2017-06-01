@@ -7,12 +7,33 @@ class TokenEnvelope
     protected $access_token;
     protected $refresh_token;
 
+    /** @var $expires_at \DateTime */
+    protected $expires_at;
+
     /**
      * @return mixed
      */
     public function getAccessToken()
     {
         return $this->access_token;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getExpiresAt()
+    {
+        return $this->expires_at;
+    }
+
+    /**
+     * @param \DateTime $expires_at
+     * @return TokenEnvelope
+     */
+    public function setExpiresAt(\DateTime $expires_at)
+    {
+        $this->expires_at = $expires_at;
+        return $this;
     }
 
     /**
