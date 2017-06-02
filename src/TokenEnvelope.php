@@ -6,6 +6,25 @@ class TokenEnvelope
 {
     protected $access_token;
     protected $refresh_token;
+    protected $token_type;
+
+    /**
+     * @return mixed
+     */
+    public function getTokenType()
+    {
+        return $this->token_type;
+    }
+
+    /**
+     * @param mixed $token_type
+     * @return TokenEnvelope
+     */
+    public function setTokenType($token_type)
+    {
+        $this->token_type = $token_type;
+        return $this;
+    }
 
     /** @var $expires_at \DateTime */
     protected $expires_at;
