@@ -20,6 +20,8 @@
     "symfony/var-dumper": "3.4.x-dev"
   },
   "require": {
-    "guzzlehttp/guzzle": "^6.2@dev"
+    "guzzlehttp/guzzle": "^6.2@dev",
+    "thefrozenfire/swagger": "2.0.x-dev",
+    "doctrine/inflector": "^1.1@dev"
   }
 }
