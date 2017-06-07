@@ -4,6 +4,9 @@ namespace sarelvdwalt\eveESI;
 
 use GuzzleHttp\Client;
 use sarelvdwalt\eveESI\swagger\Context;
+use sarelvdwalt\eveESI\swagger\Parameter;
+use sarelvdwalt\eveESI\swagger\ParameterInType;
+use Symfony\Component\VarDumper\VarDumper;
 
 /**
  * Class API
@@ -45,6 +48,7 @@ class API
      * @param $name
      * @param $arguments
      * @return string
+     * @throws \Exception
      */
     public function __call($name, $arguments)
     {
@@ -52,7 +56,27 @@ class API
 
         $thisOperation = $operations[$this->underscore($name)];
 
-        $response = $this->guzzleClient->request($thisOperation->getMethod(), $this->baseURL . $thisOperation->getPath());
+        $requestOptions = array();
+
+        // Validate that all arguments sent through can be used:
+        foreach ($arguments[0] as $key => $value) {
+            if (!array_key_exists($key, $thisOperation->getParameters())) {
+                throw new \Exception('You have to provide a parameter that is one of the following: '.implode(',', array_keys($thisOperation->getParameters())));
+            }
+
+            /** @var Parameter $thisParameter */
+            $thisParameter = $thisOperation->getParameters()[$key];
+            switch ($thisParameter->getInType()) {
+                case 'query': {
+                    $requestOptions['query'] = [
+                        $key => $value
+                    ];
+                }; break;
+                default: throw new \Exception('Unsupported in-type. '.$thisParameter->getInType().' given.');
+            }
+        }
+
+        $response = $this->guzzleClient->request($thisOperation->getMethod(), $this->baseURL . $thisOperation->getPath(), $requestOptions);
 
         return $response->getBody()->getContents();
     }
