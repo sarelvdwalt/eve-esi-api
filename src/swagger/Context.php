@@ -19,14 +19,6 @@ class Context
     /** @var Operation[] */
     protected $operations;
 
-    /**
-     * @return Operation[]
-     */
-    public function getOperations()
-    {
-        return $this->operations;
-    }
-
     public function __construct($swaggerURI)
     {
         $swaggerJSON = \GuzzleHttp\json_decode(file_get_contents($swaggerURI), true);
@@ -47,10 +39,23 @@ class Context
                     ->setMethod($method)
                     ->setSummary($operation['summary'])
                     ->setDescription($operation['description'])
-                    ->setTags($operation['tags'])
-                    ->setParameters($operation['parameters'])
-                ;
+                    ->setTags($operation['tags']);
 
+                // Iterate and create parameter objects:
+                $tmpParameters = array();
+                foreach ($operation['parameters'] as $parameter) {
+                    $tmpParameter = new Parameter();
+                    $tmpParameter->setDescription($parameter['description']);
+                    $tmpParameter->setInType($parameter['in']);
+                    $tmpParameter->setName($parameter['name']);
+                    $tmpParameter->setDataType(array_key_exists('type', $parameter) ? $parameter['type'] : null);
+                    $tmpParameter->setRequired(array_key_exists('required', $parameter) ? $parameter['required'] : false);
+
+                    $tmpParameters[$tmpParameter->getName()] = $tmpParameter;
+                }
+                $tmpOperation->setParameters($tmpParameters);
+
+                // Get security context:
                 if (array_key_exists('security', $operation)) {
                     $tmpOperation->setSecurity($operation['security']);
                 }
@@ -58,5 +63,13 @@ class Context
                 $this->operations[$operation['operationId']] = $tmpOperation;
             }
         }
+    }
+
+    /**
+     * @return Operation[]
+     */
+    public function getOperations()
+    {
+        return $this->operations;
     }
 }
