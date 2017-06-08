@@ -7,12 +7,6 @@ use sarelvdwalt\eveESI\swagger\Context;
 use sarelvdwalt\eveESI\swagger\Parameter;
 use Symfony\Component\VarDumper\VarDumper;
 
-/**
- * Class API
- * @package sarelvdwalt\eveESI
- *
- * @method getStatus(string $datasource = "tranquility", string $user_agent = null, string $xUserAgent = null) Gets the current server status
- */
 class API
 {
     /** @var TokenEnvelope */
