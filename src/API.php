@@ -19,6 +19,9 @@ class API
     /** @var TokenEnvelope */
     protected $tokenEnvelope;
 
+    /** @var APIOauth */
+    protected $APIOauth;
+
     /** @var Client */
     protected $guzzleClient;
 
@@ -29,10 +32,18 @@ class API
     /** @var Context */
     protected $swaggerContext;
 
-    public function __construct(Context $context)
+    public function __construct(Context $context, TokenEnvelope $tokenEnvelope = null, APIOauth $APIOauth = null)
     {
         $this->guzzleClient = new Client();
         $this->swaggerContext = $context;
+
+        if (null !== $tokenEnvelope) {
+            $this->tokenEnvelope = $tokenEnvelope;
+        }
+
+        if (null !== $APIOauth) {
+            $this->APIOauth = $APIOauth;
+        }
     }
 
     public function setTokenEnvelope(TokenEnvelope $tokenEnvelope)
@@ -52,6 +63,11 @@ class API
      */
     public function __call($name, $arguments)
     {
+        // Before each API call, check if the token should be refreshed and if so do the refresh call
+        if ($this->tokenShouldGetRefresh()) {
+            $this->tokenRefresh();
+        }
+
         $operations = $this->swaggerContext->getOperations();
 
         $thisOperation = $operations[$this->underscore($name)];
@@ -79,6 +95,27 @@ class API
         $response = $this->guzzleClient->request($thisOperation->getMethod(), $this->baseURL . $thisOperation->getPath(), $requestOptions);
 
         return $response->getBody()->getContents();
+    }
+
+    protected function tokenShouldGetRefresh()
+    {
+        $secondsToExpiry = ($this->tokenEnvelope->getExpiresAt()->getTimestamp() - (new \DateTime())->getTimestamp());
+        VarDumper::dump($secondsToExpiry);
+
+        if ($secondsToExpiry < 120) { // 2 minutes before it expires we want a new one
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function tokenRefresh()
+    {
+        $this->tokenEnvelope = $this->APIOauth->refreshAccessToken($this->tokenEnvelope);
+
+        file_put_contents('play.token', serialize($this->tokenEnvelope));
+
+        VarDumper::dump($this->tokenEnvelope);
     }
 
     /**
