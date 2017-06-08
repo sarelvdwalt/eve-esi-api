@@ -103,6 +103,10 @@ class API
 
     protected function tokenShouldGetRefresh()
     {
+        if (is_null($this->tokenEnvelope)) {
+            return false;
+        }
+
         $secondsToExpiry = ($this->tokenEnvelope->getExpiresAt()->getTimestamp() - (new \DateTime())->getTimestamp());
         VarDumper::dump($secondsToExpiry);
 
