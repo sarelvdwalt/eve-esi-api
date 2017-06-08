@@ -68,10 +68,11 @@ class API
         $requestOptions = array();
         $thisPath = $thisOperation->getPath();
 
-        // Validates whether we should get a token or not:
         $requestOptions['query'] = array();
-        if (array_key_exists('token', $thisOperation->getParameters())) {
-            $requestOptions['query']['token'] = $this->tokenEnvelope->getAccessToken();
+
+        $requestOptions['headers'] = array();
+        if (isset($this->tokenEnvelope)) {
+            $requestOptions['headers']['Authorization'] = 'Bearer ' . $this->tokenEnvelope->getAccessToken();
         }
 
         // Validate that all arguments sent through can be used:
